@@ -39,12 +39,17 @@ fn main() {
         .open()
         .expect("Failed to open port");
 
+    println!("Port opened.");
+
     let mut socket = ClientBuilder::new(args.socket_url)
         .namespace("/")
         .on("error", |err, _| eprintln!("Error: {:#?}", err))
         .connect()
         .expect("Connection failed");
 
+    println!("Socket connection successful.");
+
+    println!("Beginning read loop.");
     loop {
         let line = read_line(&mut port).expect("Error reading from port!");
         let parsed: AllSportUpdate = line.parse().expect("Error parsing line!");
