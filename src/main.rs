@@ -15,6 +15,9 @@ struct Args {
 
     #[arg(short, long, default_value = "https://livestats.gurleen.dev")]
     socket_url: String,
+
+    #[arg(short, long, default_value = "false")]
+    debug: bool
 }
 
 #[derive(Debug, Deserialize, Recap)]
@@ -51,14 +54,14 @@ fn main() {
 
     println!("Beginning read loop.");
     loop {
-        let line = read_line(&mut port).expect("Error reading from port!");
+        let line = read_line(&mut port, args.debug).expect("Error reading from port!");
         let parsed: AllSportUpdate = line.parse().expect("Error parsing line!");
         clearscreen::clear().expect("failed to clear screen");
         push_to_socket(&mut socket, parsed);
     }
 }
 
-fn read_line(port: &mut Box<dyn SerialPort>) -> io::Result<String> {
+fn read_line(port: &mut Box<dyn SerialPort>, debug: bool) -> io::Result<String> {
     let mut line = String::new();
     let mut buf = [0; 1];
 
@@ -66,6 +69,9 @@ fn read_line(port: &mut Box<dyn SerialPort>) -> io::Result<String> {
         match port.read(buf.as_mut_slice()) {
             Ok(_) => {
                 let ch = buf[0] as char;
+                if debug {
+                    println!("New char: {}", ch);
+                }
                 if ch == '\x04' {
                     break;
                 }
